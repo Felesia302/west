@@ -32,14 +32,12 @@ class Dog extends Creature {
     }
 }
 
-// Новая карта: Громила
 class Trasher extends Dog {
     constructor() {
         super('Громила', 5);
     }
 
     modifyTakenDamage(value, fromCard, gameContext, continuation) {
-        // Вызываем "белое" мигание (способность)
         this.view.signalAbility(() => {
             continuation(value - 1);
         });
@@ -50,6 +48,29 @@ class Trasher extends Dog {
             'Получает на 1 меньше урона',
             ...super.getDescriptions()
         ];
+    }
+}
+
+class Gatling extends Creature {
+    constructor() {
+        super('Гатлинг', 6);
+    }
+
+    attack(gameContext, continuation) {
+        const taskQueue = new TaskQueue();
+        const { oppositePlayer } = gameContext;
+        
+        taskQueue.push(onDone => this.view.showAttack(onDone));
+        
+        for (const oppositeCard of oppositePlayer.table) {
+            if (oppositeCard) {
+                taskQueue.push(onDone => {
+                    this.dealDamageToCreature(2, oppositeCard, gameContext, onDone);
+                });
+            }
+        }
+        
+        taskQueue.continueWith(continuation);
     }
 }
 
@@ -75,14 +96,15 @@ function getCreatureDescription(card) {
 }
 
 const seriffStartDeck = [
-    new Duck(),
-    new Duck(),
-    new Duck(),
-    new Duck(),
+    new Gatling(),
 ];
 
 const banditStartDeck = [
     new Trasher(),
+    new Dog(),
+    new Dog(),
+    new Dog(),
+    new Dog(),
 ];
 
 const game = new Game(seriffStartDeck, banditStartDeck);
