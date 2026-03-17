@@ -27,8 +27,29 @@ class Duck extends Creature {
 }
 
 class Dog extends Creature {
+    constructor(name = 'Пес-бандит', power = 3) {
+        super(name, power);
+    }
+}
+
+// Новая карта: Громила
+class Trasher extends Dog {
     constructor() {
-        super('Пес-бандит', 3);
+        super('Громила', 5);
+    }
+
+    modifyTakenDamage(value, fromCard, gameContext, continuation) {
+        // Вызываем "белое" мигание (способность)
+        this.view.signalAbility(() => {
+            continuation(value - 1);
+        });
+    }
+
+    getDescriptions() {
+        return [
+            'Получает на 1 меньше урона',
+            ...super.getDescriptions()
+        ];
     }
 }
 
@@ -57,10 +78,11 @@ const seriffStartDeck = [
     new Duck(),
     new Duck(),
     new Duck(),
+    new Duck(),
 ];
 
 const banditStartDeck = [
-    new Dog(),
+    new Trasher(),
 ];
 
 const game = new Game(seriffStartDeck, banditStartDeck);
